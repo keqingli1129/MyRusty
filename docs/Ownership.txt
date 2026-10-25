@@ -1,0 +1,390 @@
+Intro
+Rust makes a very clear distinction between  types that just hold plain ol' data,   versus types that hold a resource  of some kind. This distinction is  
+an important part of how Rust prevents  whole categories of bugs at compile-time. In video 1, Why Rust is Safe,  
+we introduced the idea of this distinction  between copyable types and move-only types.
+We saw a struct called Point with x   and y coordinates that's copyable  because it's just plain ol' data.
+And we saw another struct called File that  contains a file descriptor representing a   resource, the open file handle. We invented  a keyword to make this a move-only type,  
+so it can't be copied, and that  prevents use-after-close bugs. That was all made-up syntax based on C. Now it's  time to see how this stuff works for real in Rust.
+In video 2, Hello Rust, we covered the  basic language syntax and the scalar types.  
+All those types – integers, floats,  bool, char, they're all just plain data,   so values of those types can be copied freely.  We are working our way through this map of  
+the type system that I call the Elements of  Rust, which you can find at rustcurious.com.
+In this video we'll cover the Rust syntax  for tuples and structs, and we'll see how   to make types that are move-only, so they  protect resources by preventing copies.  
+We'll also write methods that work on structs,  and you'll see how to choose whether a method   gets shared access to the struct, or exclusive  access, or gets ownership of the struct.
+In Rust, if you have an instance of a struct,  you know it's been fully initialised. If it   owns a resource, you know it has exclusive  responsibility for that resource. And you  
+know if you do something that would violate that  exclusive ownership, you'll get a compiler error.
+The sense I'm trying to convey  here is that working in Rust,   objects just feel more solid. When  you design the interface for a type,  
+you get to specify how that type can  be used, and the compiler has your   back. The language gives you a lot of power to  express what's allowed and what's not. Curious?
+Tuples
+We're doing tuples first because they're  simpler, and then we'll get to structs. Here's a function that returns an integer,  
+an i32. What if we actually have two  different values that we want to return?  
+Well we could declare a struct type with  a field for each of the values and return   that. But sometimes we don't want to bother with  all that, so instead we can just return a tuple.
+The return type here is the tuple of an i32  and a bool. A tuple is a lot like a struct,  
+except you don't need a type declaration. You  just write the fields separated by commas,  
+put parens around it, and  you've got yourself a tuple. So to be clear, `(i32, bool)`  in parens is a type. And `(0,  
+true)` in parens is an expression  that produces a value of that type.
+Now, when you call foo and you get back a  tuple, how do you get at the individual fields? Well, a tuple is like a struct, except we don't  name the type, and we don't name the fields.
+So the compiler gives the fields  names that look like integers. x.0   is the first field, the i32, and  x.1 is the second field, the bool.
+Now I want to be clear here: A tuple  is not a list, it's not an array,   you can't index into it, you  can't iterate through it,  
+because the fields can be of different  types. These field names look like integers,   but they're just the names the compiler invented  for the fields based on position in the tuple.
+Destructuring tuples
+It's perfectly fine to access fields  of a tuple this way with dot notation,   .0, .1, but it's often more convenient to  destructure a tuple into its individual fields.
+So now we have a single let statement, with a  tuple pattern that creates the two variables  
+`a` and `b`. `a` is assigned the integer and `b`  is assigned the bool, directly from the tuple.
+Now, when you're learning a new language  it can take a while to get familiar with   which bit of grammar goes where, and this  is a great opportunity to highlight that  
+there are three different things  here that all look like tuples. `(i32, bool)` is a tuple type. `(0, true)` is a  
+tuple expression. It constructs a  value of that tuple type. And `(a,  
+b)` is a tuple pattern that destructures  a tuple value into its individual fields.
+These are three distinct pieces of grammar -  types, expressions and patterns. The language  
+designers have made them look the same for  consistency, but they are different things.
+This is a very simple example. Let's look  at something a little more realistic so   you get the idea of where tuples can be useful.
+This is a loop that iterates over the  characters in a string. On any string,   you can call the `chars` method to get an iterator  
+over the individual characters. We're  using that iterator with a for loop,   so on each iteration the variable `c` is assigned  with the next character, and we can print it out.
+Now, what if I also want to print out an index  that tells us which character we're up to?
+Well, on any iterator you can call the `enumerate`  method. This is called an "iterator adaptor",  
+it gives us a new iterator that  returns a tuple containing the   current iteration count along with  the item from the original iterator.
+When we use that in a for loop, on each iteration,  the tuple is assigned to the pattern on the left  
+of the "in" keyword. And it's convenient here  that we can immediately destructure the tuple  
+into separate variables. So now `i` is the  iteration count, and `c` is the character.
+Tuples are handy for making lightweight APIs like  this, that need to bundle a few values together.
+A tuple can have any number of fields. Here's a tuple with three fields. This is  a silly example because I'm constructing a  
+Patterns, types and expressions
+tuple with the expression on the right,  and then immediately destructuring it   into separate variables with the pattern  on the left. I'm just doing this to show  
+you those three parts of the language  – patterns, types and expressions.
+And, maybe this is obvious but  I want to point it out anyway:   The expression is made up of simpler  expressions. `0` is an expression,  
+`true` is an expression, and the character  `'H'` is an expression. By wrapping those   together with commas and parens we get a  tuple expression that produces a tuple value.
+Similarly, i32 is a type, bool is a type and char  is a type, and we wrap those together to make a  
+new tuple type. And, `a` is a pattern,  `b` is a pattern and `c` is a pattern.  
+Each of these binds a single variable to  whatever appears in that position. And we  
+wrap them together into a bigger tuple pattern  to destructure the tuple value into its parts.
+The reason I'm going on about this  is because I hope it helps you avoid   some of the mistakes I see when  people are new to the grammar:
+You can't mix type ascriptions  into a pattern. The grammar for   a let statement is "let pattern", an  optional colon with a type ascription,  
+and an optional equals with an expression. The  pattern and the type ascription are separate.
+Same deal with for loops: You might be tempted to write a type ascription  like `for i: u32`, but it doesn't go there,  
+the grammar is just "for pattern in expression".  There are ways to ensure an expression gives  
+you the type you want, and we'll talk  about that more when we get to generics. Ok back to tuples. A tuple  can have a single field.
+This requires a trailing comma after the field  to make it clear this is a tuple. Otherwise the  
+grammar would be ambiguous, it might just be an  integer wrapped in an extra set of parentheses.  
+You don't see a tuple with only one field  very often, but occasionally it's useful. A tuple can also have zero fields.
+Unit ()
+The empty tuple has a special  name, it's called "unit",   and it has its own place in the Elements of Rust.
+So here we have a pattern that matches  unit, with a type ascription of unit,   being assigned the expression unit. Yes  this line of code is completely pointless,  
+but the unit type is quite useful. Unit is the type that represents nothing.
+When a function doesn't have a return type,   it actually returns unit, so these two  function declarations are equivalent.
+The unit type has one valid  value, the empty tuple. Now, to store a value of a type  that only has one possible value,  
+how many bytes of memory do you need? Well, zero. There's nothing to store,   so unit is a "zero-sized type".  We'll see more zero-sized types soon.
+Ok so that's tuples! You take some  fields, stick commas between them,   wrap them in parens, and it's a tuple. They're  convient because you don't have to declare  
+anything or write names for the type or the  fields, you just use it whereever you need it.
+The downside with tuples is that  often you really want to declare   a type that conveys its own distinct meaning,  
+with its own name, its own methods etc.  So now it's time to talk about structs.
+Structs
+I did that whole section on tuples first  because tuples and structs are similar,   and in terms of how they're represented in  memory they're basically the same thing.
+You have some fields, you glue them together  in a fixed layout, and you call it type. With structs we have the same idea of  packaging some fields together into a type,  
+but structs add on all the other capabilities that  come with declaring a distinct name for that type.
+Here's the Rust syntax for declaring our Point  struct, with x and y coordinates. Inside the  
+curly braces we have a comma-separated  list of fields, and each field has a   name and a type. The trailing comma after  the last field is optional, but this is  
+idiomatic style when you're writing one field  on each line. It's a bit more consistent,   and it means you don't have to edit  that line if you add another field.
+To make an instance of a struct, you must provide  a value for every field. There's no such thing as  
+uninitialised memory, or partial initialization,  unless you're in unsafe Rust. So we write the name  
+of the struct, and inside the curly braces we name  each field and give it a value after the colon.  
+This is an expression that constructs a value of  type Point, which we assign to the variable `p`.
+Let's have a function that returns a Point. The  expression that constructs the Point is the final  
+expression in the function, so that's what gets  returned. It's a matter of style whether you put  
+all the fields on one line or on separate lines,  and whether you include the trailing comma. And  
+just to avoid confusion here, the outer Point  curly-brace is the return type of the function,  
+and the inner Point curly-brace is the start of  the expression that constructs the return value.
+Once you have a struct, you can access its  fields using dot notation as you'd expect.   So we call origin, we get a Point and assign  it to p. And then we can access p.x and p.y;
+Inherited mutability
+Of course p is immutable by default, so  if I try to assign to p.x, I get an error.
+We can declare p to be a mutable variable with  "let mut p", and now we can assign to the fields.
+You can't have some fields that are mutable and  some that are immutable. The mutability of the  
+whole struct is determined by the mutability of  the variable that's holding it. This is called  
+"inherited mutability" - the fields inherit their  mutability from the variable holding the struct.
+If you want to make a struct with an  interface where some fields are immutable,   what you really want is private fields, that are  only accessed through methods. We'll get to that.
+Destructuring structs
+So we've seen how to declare a  struct, how to construct a struct,   and how to access its fields.  What about destructuring a struct?
+Just like with tuples, you can destructure the  fields of a struct into separate variables.  
+This pattern matches a Point, and creates  two new variables, `a` and `b`. Field `x`  
+is assigned to `a`, and field `y` is assigned  to `b`. So now we can print out `a` and `b`.
+Now, this might seem like a strange thing  to do when we could just use p.x and p.y,  
+but the fact that you can write a pattern that  gets inside a struct is occasionally quite useful,  
+especially when the struct is buried  inside another type like an enum. What I want to highlight for now is, again,  this consistency in the language across these  
+three parts of the grammar: types, expressions  and patterns. A struct type declaration builds  
+up a new type from the individual types of  its fields. A struct expression builds up a  
+value from the expressions for the values of  its fields. And a struct pattern matches the  
+whole struct and destructures it, so we can  write patterns that access each of it fields.
+Now, in this example I've chosen  the variable names `a` and `b` to   be distinct from the field names `x` and  `y`. But if you're happy with variable  
+names that are the same as the field  names, then there's a shortcut for that. You don't have to say x colon x. You  can just say x, and you'll get a new  
+variable with the value of field x.  So these two lines are equivalent.
+A struct pattern doesn't have to create a variable   for every field. The underscore pattern  matches anything and ignores whatever is  
+there. So this pattern makes the  variable `x`, but it ignores `y`.
+You have to acknowledge all the fields in the  struct, even if you ignore their values. This  
+pattern is a compile error because we  didn't mention y. And this is useful,  
+because when you add a new field to a struct,  you probably want the compiler to bring your   attention to the places where you haven't  yet thought about what to do with that field.
+However, if you have a struct  with a lot of fields, and you   don't want to list them all out with  underscores to explicitly ignore them,  
+then you can use this `..` syntax to  say "ignore all the other fields".
+Tuple-structs, newtypes
+Ok so with a struct, you  choose a name for the type,   and you choose names for all the fields. With a  tuple you don't name the type and you don't name  
+the fields. What would happen if a struct  and a tuple got together and made a baby?
+Then you'd have a tuple-struct! This is a  struct where you choose a name for the type,   but you don't name the fields. It's still  a struct, but it's written with parens  
+instead of curly braces, and the fields are  just a comma-separated list without names.
+You can access the fields with p.0 and  p.1, just like a tuple. But unlike a tuple,  
+this is a distinct type, with a name, and  you can control the interface to that type.
+The most common use of tuple-structs is to create  a new type that wraps a single field. When there's  
+only one field there's not much point giving  it a name. The point of creating a new type is   to protect against confusion with other types  that have the same underlying representation.
+So kilograms and pounds might both be represented  with an f64, but by wrapping them in distinct  
+types you can't accidentally use a value  in pounds where kilograms are required.
+This practice is called the "newtype" pattern,  and it goes way beyond representing quantities  
+with different units. For example, a newtype  might be used to protect a resource, like a file  
+descriptor, or a memory allocation, or an amount  of money, or permission to access an I/O port.
+We'll talk more about resources in a minute,   I promise. But first, there's one  more kind of struct we need to see.
+Unit-like structs
+You remember the empty tuple type, unit. Well,   you can also have an empty struct, with no  fields. This is called a "unit-like struct".  
+So the struct Foo is a zero-sized type. It has  one possible value, which is constructed with the  
+expression Foo. And it can be "destructured"  with a pattern that is just the name, Foo.
+Ok cool, um, why on earth would anyone want to  declare an empty struct. Well: When we get to  
+generics and traits, we'll see how a library can  provide an API that allows you to plug in values  
+of your own type, as long as that type implements  the right interface, the right trait. And  
+sometimes you want to use that API with an empty  object, if you don't actually need to provide   any data. So, you can declare a unit-like struct,  implement the right trait on it, and away you go.
+So now you've seen the three forms of structs:   curly-braces with named fields, parens  around comma-separated fields without names,  
+and a unit-like struct with no fields. Now,  let's write a function that takes a struct.
+Move-only by default
+The show function takes a parameter p of type  Point, and prints out its coordinates. So we make  
+a Point and pass it to show, and this works. Now:  What do you think happens if we call show again?
+This should work fine, right?   It just prints out the coordinates  again? Nope, this does not compile:
+Use of moved value `p`. Move occurs  because `p` has type `Point`,  
+which does not implement the `Copy` trait. When we called show the first time, the value  of `p` was moved into the show function,  
+and the variable `p` was marked as no  longer available, because its value is gone.  
+So when we call show the second time and  try to use `p` again, we get an error.
+What did we just learn? Our struct  Point is a move-only type, it cannot   be copied. In Rust when you declare  a struct, it is move-only by default.  
+Deriving Copy and Clone
+It's being treated like a resource,  something that should not be copied. Well, of course, a pair of coordinates  representing a point is not a resource,  
+it's just plain ol' data, so we'd like to make  this type copyable. How should we do that?
+I think the most natural syntax to make a  type copyable would be to say `#[derive(Copy,  
+Clone)]`. Nice, that's just intuitive, right?
+Ok what the hell is this? Alright well, yes,   this really is the typical Rust syntax to  make a type copyable, so let's break it down.
+The hash with square-brackets applies  an attribute to the item that follows,  
+in this case the type declaration.  And the "derive" attribute says,   hey compiler, give me the automatic  implementation of some traits on this type.
+The "Copy" trait is the one we want,   it's the ability to implicitly make a  copy when a value of this type is used,  
+by just making an exact copy of the bytes  that represent the value, like with memcopy.
+And, we also need the Clone trait, because  the Copy trait requires the Clone trait.  
+Clone is the ability to explicitly  make a copy by calling a clone method,  
+which is allowed to do arbitrary  work to construct the new value.   The easiest way to get the Clone trait  is just to derive it, so, there it is.
+So now that we've made this struct copyable we  can pass it to the show function as many times  
+as we want, and it will implicitly pass  copies around, just like a struct in C.
+As for the syntax, I know this looks awkward  at first, but the design makes sense,   we are adding on capabilities to the type.  By default the struct cannot be copied,  
+but we can add on the capability to make copies. And you use this derive attribute to  add lots of other capabilities too,  
+so a realistic declaration of a Point type would  look like this. Each capability is defined by a  
+trait that describes an interface with some  required methods. This derive attribute is a  
+very lightweight way to get an automatic  implementation of some traits on a type,  
+but it's also very common to implement  traits by hand to customise the behaviour.
+Traits are a really important part of the  language, the trait system is very well designed,   and I expect to make multiple videos  on the topic. On the Elements of Rust,  
+the map of the type system, the top half  is all the types built into the language,   and the bottom half is all the traits  built into the language. The compiler  
+has special knowledge of the Copy  and Clone traits, so here they are.
+Clone represents the ability to explicitly  duplicate a value by calling a clone method,  
+and Copy represents the ability  to implicitly duplicate a value   by just copying the bytes under the  hood. So, which types are copyable?
+All the scalar types are copyable. Arrays are  copyable if the element type is copyable. And btw,  
+this language of saying a type "is Copy" is common  for talking about traits in the Rust community,  
+but it feels weird to say out loud. Tuples  are automatically Copy if all the fields  
+are Copy. Structs and enums are not copyable  by default, but they can explicitly opt in.
+Methods
+Ok so now that we have our Point struct  and it's copyable plain ol' data,   let's give it some methods.
+In some languages you'd write methods inside  the curly braces of the type declaration,   but not in Rust. Here we have an "impl  block", which can implement methods on  
+the type Point. The impl block is separate from  the type declaration, but it has to be in the  
+same compilation unit, the same crate. So I've  moved the show function into this impl block,  
+and instead of taking a parameter `p`, it now  takes the keyword `self`. The self parameter  
+can only be used inside an impl block, and self is  a value of the type named after the impl keyword.  
+So inside the body of the show method I can use  self.x and self.y to print out the coordinates.
+The benefit of this special self parameter  is that this method can be called using dot   notation, so now I can call p.show().  Whatever is to the left of the dot,  
+in this case `p`, is passed as the  self parameter. Methods can take   other parameters too, but if you have  a self parameter it has to come first.
+You don't have to use dot notation to call  methods. Methods are just regular functions,  
+so you could instead go into the Point namespace,   call the show function and pass `p` as  an explicit parameter. That's equivalent  
+to calling p.show(). Calling with dot  notation is really just syntax sugar.
+Shared references, &self
+Right now this self parameter is being  passed by value. For a struct with lots   of fields you might not want to copy  the whole object just to call a method.
+So let's change the show method to take self by  reference. Now the first parameter is `&self`,  
+and this means we're passing a shared  reference, which is a pointer to the   struct. You remember the SHARE keyword  we invented in the very first video,  
+this is a reference type that gives  us immutable, read-only access.
+Notice I didn't have to change the body of the  method, I can still access self.x and self.y,  
+even though the variable self is now  a pointer type. With dot notation the  
+dereference is implicit, you don't have to use  an arrow operator like you would in C or C++.
+Similarly, when I call p.show(), that works  without any code change because the compiler  
+will automatically take a reference to `p` when  I'm calling a method through dot notation. But  
+when we call show as a function and explicitly  pass the self parameter, we now have to pass `&p`,  
+which takes a shared reference to the variable  `p`, otherwise we get a type mismatch error.
+Let's add a method that updates the values in the  fields. This offset method takes parameters dx and  
+Mutable references, &mut self
+dy, which it adds onto x and y respectively. And  so that it can update the fields, it takes &mut  
+self. That means self is a mutable reference to  the struct. It's just like the BORROW keyword  
+we invented in the first video, it guarantees  exclusive access to the struct. Some people  
+refer to these as exclusive references,  I tend to call them mutable references,   but either way, the point is that you can  only mutate if you have exclusive access.
+So let's call p.offset(). Oops, but this doesn't  compile yet, we get an error: "cannot borrow `p`  
+as mutable, as it is not declared as mutable".  Calling the offset method implicitly takes a  
+mutable reference, but right now, `p` is declared  as an immutable variable, so we can't do that.
+That's easily fixed, we just change it to "let mut  p". And now this works. We can call p.offset(),  
+which adds those values to  the x and y coordinates,   and the changes are visible  when I call `p.show()`.
+Factory functions
+Functions inside the impl block  are called "associated functions",   because they are associated with the type. They  are in the namespace of the type and they *can*  
+take a self parameter, but they don't have to.  The origin function doesn't take any parameters  
+but it constructs a Point value, so we could move  it inside the impl block, and that way it's in the  
+namespace of Point. This pattern of having factory  functions that construct values is very common  
+in Rust, and it's a lot simpler than the story  around constructors and initialisation in C++.
+So: We can write associated functions that  don't take self, or that take self by value,  
+by shared reference or by mutable  reference. This gives you a lot of   control over how a type can be accessed  when you're designing its interface.
+Of course to really control what a type can do,   you need private fields that can only be  accessed by the interface you provide.
+Modules and privacy
+In a program of any complexity there are many  moving parts, and it's a lot to keep track of.  
+The fundamental tool we use to cope with this is  the "separation of concerns". Divide and conquer.  
+We try to make clean boundaries  between different parts of a program,   with reusable modules that we  can think about one at a time.
+In the code I've shown you so far we've been  doing everything inside a single module,   the root module. To demonstrate private  fields in structs we need another module,  
+because privacy is enforced at module boundaries. Our Point type deals with 2-dimensional cartesian  space, so let's make a module called "cartesian".
+There are two ways to make a module, and both  use the `mod` keyword with the module's name.  
+The first way is to write the body of the  module inline like this, inside curly braces.
+The other way is to just declare the module,   and put the code in a separate file. So if  we say "mod cartesian" in the root module the  
+compiler will look for the file "cartesian.rs"  or "cartesian/mod.rs". Modules can be nested,  
+so you end up with a directory  hierarchy that matches the module tree.
+So let's move the Point type declaration  and the impl block into cartesian.rs,  
+and we'll keep our main function in main.rs. This is main.rs. We declare the module cartesian,  
+and for convenience I'm going to import the  type name "Point" into the current namespace,  
+with the `use` declaration. I'll use  that when I call `Point::origin()`.
+Public items
+This doesn't compile yet, because the cartesian  module currently doesn't make anything public,  
+it's all private by default. We're  going to need access to the Point type,   and the functions origin, offset and show.
+So in the module, I add the `pub` keyword to the   type declaration and the functions I  want to export. And now this compiles.
+If I had other functions here that should stay  private, I'd just leave out the pub keyword,   and main wouldn't be able to access  them. Private items are only visible  
+to the module where they're declared,  and any sub-modules inside that module.
+Private fields
+Even though I've made the struct type public,   the fields of the struct are still private.  For a lot of types, that's exactly what  
+you want - private fields that can only be  accessed through the methods you make public.
+So right now, if I try to access p.x I get  "field `x` of struct `Point` is private."
+What's more, I can create a Point by calling  origin, but I can't construct one directly.
+To use the constructor syntax I have  to name each field and give it a value,   but if I try that here I get the same error  - fields `x` and `y` of struct `Point` are  
+private. So the module is in complete  control of the private field values.
+For this Point type, it actually makes sense  for x and y to be public, because this is just   a plain ol' data type. So let's do that. The pub  keyword goes right before each field name. And  
+now other modules can directly construct  instances, and read and write the fields.
+Resource types
+Ok here's a fun question: What's the difference  between these two declarations of a struct  
+called Token? The first one is a unit-like  struct, with no fields. The second one is a  
+tuple-struct with one field of type unit. These  are both zero-sized types. Are they equivalent?
+No, they're different. The first one  has no fields, so anyone can construct  
+a value of this type just by naming the  type. The second one has a private field,  
+which means other modules cannot construct it. Here's an API for a ride, where you  purchase a token and then redeem it  
+to use the ride. This is all  inside a module called ride,   which I've written inline this time, but  it could equally be in a separate file.
+So we have a purchase function that prints  "Enjoy your ride!" and then returns a token.  
+And the token has a method called redeem that  takes self by value, and prints out "Weeee!!!".
+Cool so let's take it for a ride. In main we call  purchase, we get back a token, and then we call  
+token.redeem(). Great, this works. Now, let's  see if we can cheat and get some free rides.
+Can I redeem the same token twice?  No - if I call token.redeem() again,  
+I get the error "use of moved value": "The move occurs because `token` has type `Token`,  which does not implement the `Copy` trait."
+It points at the first redeem call and says  "`token` was moved due to this method call".
+Then it points at the second redeem call  and says "value used here after move".
+And finally it points at the declaration  of the redeem method and tells us "note:  
+`Token::redeem` takes ownership of the  receiver `self`, which moves `token`".
+See, error messages are actually cool,   this told us exactly what happened. The first  time we called redeem, the token was consumed,  
+so we no longer have it. It disappeared into  the self parameter of the redeem method.
+What if I try copying the token? "Error: use of  moved value: `token1`". It's a very similar error,  
+but this time the move happens when I assign it  to token2. The assignment is a move not a copy,  
+so token1 is invalidated and  I can't call redeem on it.
+And what if I try making my own token?  "Error: cannot initialize a tuple struct  
+which contains private fields". So, in  code that's outside of the ride module,  
+the only way to get a token is  through the public purchase method.
+So even though it's a zero-sized  type, it doesn't contain any data,   we've built a type that represents  a resource. If you have a Token,  
+it means you've purchased a ride  and you haven't redeemed it yet. And of course we could store whatever fields  we want in the struct to keep track of the  
+resource. This pattern is everywhere in Rust.  All the collection types track their heap  
+allocations as resources. File objects  track their file descriptors. Embedded  
+firmware can track that there is only one user  of some hardware resource. You get the idea.
+Destructors, Drop trait
+There's one more thing needed to make all  those use cases work well, and that's to   take care of cleaning up the resource when  the object goes out of scope. For that,  
+we need destructors, which in Rust  are controlled by the Drop trait.
+And oh look, here it is, right  next to the Copy and Clone traits. Destructors are actually quite a  deep topic in Rust. There are some  
+interesting cases for the language to handle  when a variable might be valid or might not,   depending on which branch was taken, leading  to something called "drop flags". Destructors  
+can have some interesting interactions  with thread unwinding if there's a panic.   And you can't always rely on destructors  running, it is possible to leak objects if  
+you try hard enough. So, destruction  is a topic for a whole other video.
+We're getting to the end of this one,   but I need to show you one last thing before  we wrap it up with a practice exercise.
+References to private fields
+What if you have a struct that  holds a resource, like a string,   and you want to let your clients access that  resource without giving up ownership of it?
+This is the dynamic String type provided  by the standard library. It's a struct,   and it has private fields  because it manages a resource,  
+the heap allocation containing the bytes  of the string. The bytes are on the heap   because the length of the string can change  at runtime. So, the struct contains a pointer,  
+and it has a destructor that frees the heap  allocation when the String is destroyed.
+String is not copyable, it is a move-only  type, because it owns a resource. If we  
+did allow the String struct to be copied,  that would just make a copy of the pointer,   so then there would be two structs both  pointing to the same allocation on the heap.  
+That would be bad, because when one  struct frees or reallocates the string,   the other struct would be left with a  stale pointer, leading to a use-after-free.
+So I'm using String as an example  of a type that holds a resource.   And now I want to make a struct  that holds a string in a field.
+This struct, Video, has a  private field called title,   that holds a String. And because String  cannot be copied, that means Video also  
+cannot be copied. If I tried to implement  the Copy trait for Video, I'd get an error.
+The title field is private, so to make a Video we  have a factory function called `new` that takes a  
+String and returns a Video with that string  in the title field. Also notice I'm using  
+another little shortcut here: The field name is  `title` and the variable from the parameter has  
+the same name. So I don't have to say `title:  title` to name the field and give it a value,  
+I can just say `title` because the local variable  has the same name as the field I'm initialising.
+Next I want to provide readonly access to the  field, with a method called title. The title  
+method takes self by shared reference,  `&self`. That's the right choice because  
+I want the client to be able to read the  title, whether they own the Video object,   or they have exclusive access to it, or even  if they only have a shared reference to it.  
+Choosing `&self` here gives my  clients the most flexibility. So, what type should this method return? What do  I give the caller when they want to see the title?
+Well, let's try returning a String.  So I say the return type is String,   and in the method body I return self.title.
+This does not compile. "Error: cannot move out of  `self.title` which is behind a shared reference."
+"The move occurs because  `self.title` has type `String`,   which does not implement the `Copy` trait."
+So the compiler sees that we're trying to  return self.title by value, which would  
+mean moving it out of the Video struct. And  we can't do that, because, well first of all,  
+we can't mutate the Video because we're accessing  it through a shared reference which is read-only.
+But even if we take self by mutable reference  with `&mut self`, we get the same error. We  
+can't just rip the title String out of the  Video because the Video object still has to   be valid after this method returns. This method  is just borrowing access to the Video struct.
+Clone trait, Copy vs Clone vs Move
+In both cases the error message goes on to  make a suggestion: "Consider cloning the   value if the performance cost is acceptable."  And it shows us the syntax for doing that:
+So the String type doesn't implement Copy, but  it does implement the Clone trait. That's the   one where you call a clone method, that can  do arbitrary work to come up with the new  
+instance. In the case of a String, this is  a deep copy. When we call self.title.clone()  
+it makes a new heap allocation, and copies all  the bytes to make the new string that we return.
+I want to pause here to note, types that  implement the Clone trait are an interesting   half-way point between plain ol' data types that  can be copied, like scalars or the Point struct,  
+and resource types that can't be copied. String  implements Clone. It's a resource type in the  
+sense that it manages a heap allocation so you  can't just copy the bytes of the String struct,   because then the copies would be fighting over  the same heap allocation. But it's kind of a  
+plain ol' data type, it's just a string, and you  can make a copy by cloning it if you need to.
+Anyway in this particular case, cloning the  title works, it compiles, but... I don't feel  
+great about it. All I want to do is give  the caller readonly access to the string,   surely we don't have to duplicate  the whole string just for that.
+Instead of cloning the string and returning  it by value, we can return a shared reference   to the one we already have. So I change the  return type to `&String`, and in the method  
+body I say `&self.title`. This is much better,  this is super lightweight, we're just returning  
+a pointer to the field. And it's safe, because  at each place where this method is called, the  
+compiler tracks the returned pointer. For as long  as the caller holds the pointer to the string, the  
+compiler treats the Video as being in a shared,  readonly state. So while it's shared, nobody can  
+mess with the Video object or the title string  in any way that would invalidate the pointer.
+String vs &str
+This is cool, but actually, we're not  done yet. This particular String type  
+is one of several options for managing a UTF-8  string, with different tradeoffs. For example,  
+there's a copy-on-write string type. Maybe one  day I'd like to change the private field to  
+use a different type to store the string, but  right now that would be a breaking change in   the API. I'm exposing to my clients the fact  that I'm using this particular String type.
+There is a better option. I can change the return  type to `&str`, all lowercase. This is a shared  
+reference to a "string slice", which means it  points directly to the UTF-8 bytes of the string  
+in the heap allocation. I don't even have to  change the body of the method, because the String  
+type has the ability to automatically coerce the  type. If you have a reference to a String struct,  
+you can implicitly turn that into a  reference to a string slice, `str`.
+This is better because across all the options  I might choose to store the title string,  
+they can all expose their underlying  UTF-8 storage as a string slice. So  
+the client no longer knows or cares  which particular String type I'm using.
+Separation of concerns is a beautiful thing.  Anyway there's more to say about all that,   and I'm planning a video going into  detail on strings, but for now,  
+the point is that you've seen how a struct can  safely provide public access to private fields.
+Practice exercise
+Ok, finally, it's time to wrap this up  with some coding practice. It won't take   long to explain the exercise, because  it uses the code I've just shown you.
+To get the playground with the exercise code  just go to rustcurious.com/4, scroll down a bit,  
+and... oh, hang on, what's this? "Boost your  learning. For purchase, Lesson 5: Destruction."
+"With no garbage collector, Rust relies on  deterministic destructors to manage the lifecycle   of objects. Write types that safely encapsulate  raw resources, reason confidently about the scopes  
+of locks, and understand the limitations of  Rust's guarantees around resource leakage."
+That's a coincidence, we were talking  about destructors just a minute ago. Cool,   well, I'm definitely bookmarking that one!
+Anyway, on with the exercise. Most of this is exactly the code for the  Video type that we just saw. At the top  
+is a comment explaining that your job is  to add some fields to track the number   of likes and dislikes on the video,  and add methods so the test passes.
+The test expects to call some  methods that don't exist yet: add_like() will increment the number of likes.
+add_dislike() will increment  the number of dislikes. The likes_dislikes() method will return a tuple  
+containing the number of likes  and the number of dislikes. And the like_ratio() method will return the number  
+of likes divided by the total  number of likes and dislikes.
+At the bottom of the file is the unit test.  You don't need to change anything here,   but reading it helps clarify what to do.  The add_like method is called three times,  
+and add_dislike is called once, so the  likes_dislikes method should return a  
+tuple with those counts. You can choose  your integer type. The like_ratio method  
+is expected to return a floating point  value, so you can choose f32 or f64.
+There's nothing too fancy happening here, this is  just to get some practice writing struct fields   and methods that access them. Methods that mutate  fields should take self as a mutable reference,  
+and methods that only read fields  should take self as a shared reference.
+You don't need to do anything  with destructors in this exercise,   but I will walk through a solution at  the start of the video on Destruction.
+Ok that's it! We made it. I hope what you get from all this is a sense  that Rust provides a very rigorous basis for  
+designing types that handle resources.  The type system is explicit about what   can be copied or cloned, there are clear  boundaries around access to private fields,  
+and you can safely expose references to internal  fields. You can control how objects are created,  
+and when an object is consumed there's no chance  of it being accidentally duplicated. This means  
+we can design interfaces like the Token API that  provide some useful guarantees at compile time.
+We are making our way through the Rust type  system. The next free video will be about enums,  
+which form an absolutely crucial part of  the language. If you haven't yet worked   in a language with this kind  of support for tagged unions,  
+I reckon after this one you'll be wondering  how you ever managed without them. So stay tuned, stay curious,  and I'll see you soon!
