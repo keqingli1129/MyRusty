@@ -1,0 +1,299 @@
+Intro
+Rust is a fascinating language. It's just as  fast as C or C++, it gives you just as much  
+low-level control, and yet, it guarantees  your program is completely memory safe and  
+threadsafe. My previous video explains how  that's possible, so if you missed that one,  
+go back and watch that first. It's number 1 in  the channel, it's called "Why Rust is Safe".
+In that video I could get away with a bit  of hand-waving, because we were dealing  
+with a made-up thought-experiment language. But  starting today, we're talking about a very real  
+language. This video is about the most basic  bits of Rust syntax - functions, variables,  
+conditionals and loops. These are concepts you  already know so we're gonna go pretty fast,  
+and I'll leave you with a little coding  exercise to practice what you've learned.
+To guarantee memory safety Rust also has to  be completely type safe, and to make that  
+work there are many details in the language that  have to work together. Ownership and borrowing are  
+important but they're not the whole story. Even  in the scalar types there are some interesting  
+details around casting and type safety of...  unicode characters of all things. Curious?
+Hello World
+All right, we gotta start somewhere,  so here it is: Hello World.
+If you'd like to follow along, you  can run this for yourself in the  
+Rust playground on the web, at play.rust-lang.org
+What do you notice so far? Functions  are introduced by the fn keyword,  
+and execution begins with the main function.  And we have curly braces and semicolons,  
+this is a civilised language thank you  very much. No semantic whitespace here.
+The most obvious odd thing so far is  that exclamation mark. That tells us  
+println is not actually a function, it's  ... Ok I'm gonna tell you something,  
+println is... a macro
+and if you're a C programmer I want you stay with  me here, ok? Just hear me out: println is a macro.
+Now, in C, macros are terrible. They're  implemented by something called the preprocessor,  
+which doesn't know anything about C syntax. It  just takes a stream of source code text and does  
+cut-and-paste with it, and then feeds that to  the real compiler. And, a macro invocation looks  
+exactly like normal code, so it's far too  easy to do really evil things by accident,  
+like breaking operator precedence, with very  surprising results. What's more, macros are  
+basically the glue that gets used to fill all the  gaps in the language, so ... it's a whole thing.
+In Rust, macros are nothing like that. Macros  are part of the grammar of the language,  
+and they operate at the level of the abstract  syntax tree, not the source code text.  
+So the definition of a macro will say,  "this argument must be an identifier", or,  
+"this argument must be a complete expression",  and an invocation won't compile if it doesn't  
+get what it expects. If a macro uses local  variables, those are in a separate namespace,  
+so it's not possible to have name collisions. This  kind of system is called "hygienic macros", and it  
+enables some quite powerful metaprogramming.  That'll be another whole video one day.
+The reason println is a macro is because  it takes a variable number of arguments. It  
+parses the format string at compile-time  and checks it against the types of the  
+arguments. So let's try that now, let's  declare a variable and print its value.
+Variables - let
+The let keyword declares the variable x, with type  
+u32. The thing after the colon is the type.  u32 is the unsigned 32-bit integer type. 
+In the println format string the pair  of curly braces is a placeholder,  
+and that gets substituted with the value of x when  this runs. So this program prints out "x is 10".
+Rust is a statically-typed language, just like C  or C++. That means the type of every variable is  
+nailed down at compile-time. The word static just  means not changing, so once a variable has a type,  
+that type never changes. In this case we are  explicitly declaring the type of x to be u32.  
+We don't have to specify the type, we can  instead let it be inferred by the compiler:
+This syntax 10u32 probably looks a bit  unusual; it's the literal value 10,  
+with the explicit type u32 specified in  the literal. I'm assigning that value to x,  
+so the compiler infers that  x must have the type u32.
+By default, variables are immutable, or  read-only. Once a variable is initialised,  
+if you want to change its value then it needs  to be declared as mutable with the mut keyword:
+Mutable variables - let mut
+So by saying let mut, x is now  mutable, and we can assign to it. 
+The reason for preferring immutability by default  is just that it makes code a bit easier to read  
+and understand. If you have an immutable  variable that's initialised with some value,  
+you can read the rest of the function  and know that value won't change.
+You might also be wondering why it takes  two keywords to declare a mutable variable.  
+Why not say something like var x = 10?  The reason is that a let statement can  
+declare multiple variable bindings,  and each one can either be mutable  
+or immutable. We'll see examples of that  when we get to tuples in the next video.
+In this example I didn't specify a type for  x anywhere, except we know it has to be an  
+integer of some sort because we're giving  the value 10. In this case the compiler  
+uses the default integer, which happens  to be a signed 32-bit type called i32.
+Scalar types
+These are Rust's integer types. u means unsigned,  
+i means signed integer. We have 8-bit, 16-bit,  32-bit, 64-bit and 128-bit integer types.
+We also have usize and isize. These have the same  number of bits as a pointer. So on a 32-bit system  
+usize and isize are 32-bit integers, and on  a 64-bit system they're 64-bits. usize is the  
+type we use to index into arrays and count lengths  of arrays, because it'll always be big enough to  
+handle the length of anything we can hold in  memory. usize gets used way more than isize.
+Next we have floating-point types f32  and f64. These are the standard types  
+defined by IEEE754. Obviously f32  is the 32-bit floating point type,  
+and f64 is the 64-bit one. These are  equivalent to float and double in C.  
+They take values with a decimal point. For  really big or really small values you can  
+also do the scientific notation thing with an  'e', so 6.022e28 means 6.022 by ten to the 28.
+We also have a boolean type called bool, with  the values true and false. True and false are  
+keywords. A bool is one byte in size, but it only  ever holds one of these two values, which are  
+represented as 0 and 1. It's undefined behaviour  to create a bool containing some other value,  
+but you don't need to worry because  that's not possible in safe Rust.
+And finally we have a type called char, which  is of course a ... "unicode scalar value". You  
+all know what a unicode scalar value is, right? Of  course you do. It's basically a unicode codepoint,  
+but without the weird surrogate codepoints that  were invented to make UTF-16 work. We don't need  
+surrogates, Rust has great support for UTF-8.  So in Rust a char is always 32 bits in size,  
+but only certain value ranges are allowed.  It's undefined behaviour to create a char  
+with an illegal value, but, again,  that's not possible in safe Rust.
+Char literals are written in single quotes, and  you can write anything that can be represented  
+by a single codepoint, including lots of  emojis. Some emojis need multiple codepoints;  
+for example anything with a skin tone  specified is made by combining codepoints,  
+so that would have to be a string, not  a char. We'll get to strings eventually!
+So those are all the scalar types. When you  need a reminder of what these types are called,  
+you can go to RustCurious.com and click on the  "Elements of Rust". The scalar types are in this  
+block on the left-hand side, and each square is a  link to the official documentation for that type.
+The compiler will never implicitly convert  between any of these types. Let me say that  
+Casting between scalar types - as
+again. Rust will never implicitly convert  between any of these scalar types. When you  
+do want to convert between them, one  way to do it is with the as keyword:
+So here, c is a char, and c as  u32 converts it to an integer,  
+so we can print out its decimal value.  The details for casting like this between  
+scalars depends on the types involved. So  for example I can cast from a char to a u32,  
+but I can't cast from a u32 to a char because  not all u32 values are valid char values.
+By the way if I want to display that value  as hex, I can change the format string:
+The colon x inside the placeholder  means use hex formatting. There  
+are lots of options for formatting,  let's not get into that right now.
+So c as u32 is an expression that  produces the value of the char,  
+as a u32. When you write an assignment, the thing  on the right of the equals sign is an expression.
+Block expressions
+Anywhere you can write an expression, you can  write a block of code that produces a value.
+The value assigned to x is the value of the block  surrounded by curly braces. The value comes from  
+the final expression inside the block, in  this case a + b. So x gets the value 30.
+Notice there's no semicolon after  that final expression a + b.  
+You can think of the "final expression" as  being "the thing after the last semicolon,  
+or the last statement" in that block.  The point of using a block here is you  
+can use temporary variables and as much  complicated code as you like to come up  
+with that value. Here we're just adding two  variables, but you can do whatever you want.
+Notice we still need the semicolon  after the closing curly brace,  
+to terminate the let statement.
+This idea that a block can result in a  value also applies to the function body:
+Function return types
+This function takes a u32 called x, and  returns a u32. The return type is written  
+after the arrow. Parameter types and return  types for functions must always be declared  
+explicitly. The value returned by this function  is the final expression in the function body,  
+x * 3. Again, no semicolon  after that final expression.
+Mismatched types error
+If we did write a semicolon after the x  * 3, the final expression in the function  
+would be... nothing. And that would be a type  mismatch because we said we'll return a u32,  
+but we're returning nothing.  Check out the compile error:
+Now, C++ has trained us not to read  compile errors. I want to turn that around,  
+so let's take the time to read this one in detail:
+"mismatched types - expected u32, found" -  That empty pair of parens is called "unit",  
+it's the type that represents "nothing". So this  error says "expected u32, found ()". The function  
+"implicitly returns () as its body has no tail  or return expression". And then there's a very  
+helpful tip pointing at the "x * 3": It says  "remove this semicolon to return this value".
+As you can see, the compiler team has  worked hard on Rust's error messages,  
+and they are often super helpful, like  this one. Sometimes the suggestions can  
+still lead you astray, but  usually they're pretty good.
+Conditionals - if-else
+Ok let's do conditionals.
+Unlike C, the condition does not  need to be surrounded by parens.  
+The condition expression must evaluate to a  bool, which of course the comparison operators  
+do. And the curly braces around the body of the  if are required, they're not optional like in C.
+Of course, you can add an else block  that executes if the condition is false:
+Now here's something interesting:  if-else can be used as an expression.
+The value of the if-else expression is  the value of whichever branch is executed.  
+This only works if you have an else block, because  you need it to produce a value in all cases. No  
+need for a separate ternary operator, if-else  does the job. Let's use this in a function:
+I think we can make this code a bit simpler. We  don't really need this temporary variable max.
+So now the if-else expression is the final  expression in the function body, so its value  
+becomes the function's return value. Rust makes  it easy to write in this pure-functional style,  
+Early returns
+but you don't have to. You can also return  early from a function if you want to.
+This average function wants  to divide total by count,  
+but it first checks in case count  is zero and returns early if it is.
+Match expressions, patterns
+Sometimes you have many cases you want  to check for, and a long chain of if  
+else-if else-if would be cumbersome.  For that, we have match expressions.
+Here we have a function that takes a char, and  returns a description of the character. The return  
+type is... ampersand single-quote static str -  what the hell is that. Well it's one of Rust's  
+many string types, and don't worry, there's  a good reason it looks like that. Strings in  
+Rust are actually awesome, we'll talk about them  properly one day soon. For now I'll just say, this  
+is a reference to a string that's valid in any  scope, and that's always true for string literals.
+Anyway this function uses match. It takes  an expression, in this case just the char c,  
+and tests it against a series of patterns. Each  of these lines inside the braces is a "match  
+arm" with a pattern on the left, and an expression  on the right, separated by an arrow. Notice this  
+arrow uses an equal sign, it's different from the  arrow used for the return type of the function.
+So the first match arm has a pattern that matches  the thumbs-up emoji, and if c matches that then  
+the string with the word "like" is the result of  the match expression. The next match arm has a  
+pattern with a bell, and of course it returns the  string "subscribe". How did that get in there...
+The next pattern will match the left square  brackets or the right square bracket. And we  
+just keep going down the list until we  find a match. The first one wins. So if  
+c is the digit 5 then we return the word  "five". If it's any other digit we return  
+the word "digit". Notice the inclusive  range here with ..= . You can combine  
+multiple ranges into a single pattern,  to match lowercase or uppercase letters.
+And then we come to the underscore  pattern. Underscore is a wildcard,  
+it matches anything. But this match arm also  has an "if", called a guard condition. So if  
+we cast c to an integer and it's less  than 128 then we return "other ascii".
+Matching is required to be exhaustive,  because you have to return something  
+for all possible cases. So the underscore  wildcard in the last arm is the catch-all,  
+the default if none of the other arms matched.
+In this example the expressions on the right  of the match arms are all just literal strings,  
+but they could be any expressions, including  block expressions containing code that does  
+stuff. Of course all the right-hand-side  expressions have to result in the same type,  
+so the value can be returned from the match.
+Ok that's match. You probably  won't use it much with scalars,  
+but when we get up to dealing with enum  types we'll definitely be talking some  
+more about match expressions, it's  an important part of the language.
+Loops - loop, break
+Alright. Hopefully no big surprises in the  concepts we've seen so far. Let's look at loops.
+The loop keyword makes an infinite loop. We  can use the break keyword to exit the loop.  
+In this example I'm calling a function to  generate a random value for x on each iteration,  
+and we break out of the loop when x > 200. Loops  also support the continue keyword, just like C.
+So of course your immediate question is -  why on earth would we want a keyword for  
+an infinite loop? Why not just use while  true? The answer is that an infinite loop  
+can be an expression that produces a  value when you break out of the loop.  
+So, let's say you want to keep  that random value that was > 200:
+The break keyword can take an  expression, in this case x,  
+which becomes the value returned by the  loop expression, which we can assign to y.
+Loops - while
+Now don't worry, Rust does also  have while loops and for loops.
+Here's a while loop that  repeats for as long as x > 0.
+Just like "if", the condition  must evaluate to a bool, and it  
+doesn't need parens around it. The curly  braces are required around the loop body.
+Loops - for, ranges .. and ..
+And finally we come to for loops:
+"for x in 0..10" - This loop  prints the numbers from 0  
+through 9. 0..10 is a "half-open range"  that includes 0 and does not include 10.  
+If I also want to include 10 I can  instead use a closed range expression:
+With 0..=10, this now prints  0 through 10 inclusive.
+Ranges are just one kind of iterator, there are  many. for-loops work with any kind of iterator.
+An iterator produces a sequence of items. In  this example the range 0..=10 is the iterator,  
+and each item is an integer. On each iteration,  
+the next item gets assigned to x, which  is only in scope inside the loop body.
+I'm planning a whole video on iterators,  
+mostly about the four different ways to  iterate through collections. We'll get there.
+Ok so we've seen println, variables with  let and let mut, the scalar types i32,  
+u32, bool etc, functions, conditionals  with if-else, while loops, and for loops.
+Practice exercise: factorial
+Now, you can sit there and watch me go through all  this, but unless you get that learning from your  
+eyeballs into your fingers, it'll be gone in 10  minutes. You didn't think you could get away with  
+just being a spectator did you? No no! It's time  for you to do some work. Time to learn by doing.
+I have a tiny little practice exercise for  you. You don't need anything more than the  
+syntax I've just shown you, and the act of  actually typing it gets this understanding  
+into a different part of your brain,  versus just seeing code on the screen.
+You don't even need to install a compiler, you  can do this in the Rust playground on the web.  
+And I've already set up the playground with unit  tests for you. Just go to rustcurious.com/2,  
+that'll take you to the page for this video.  Then scroll down to the exercise, and...
+Oh, hang on, what's this? Boost Your  Learning. For purchase: Lesson 3 - Panic!
+Learn how to manage unrecoverable  errors in Rust – division-by-zero,  
+integer overflow, out-of-bounds  array access, and failed assertions.
+Cool! I'll definitely have to come  back and watch that. And I really  
+want to push that red button, but  first I should try this exercise.
+So there's the source code, but I can just press  Open in playground, and there it is, ready to run.
+This exercise is about the factorial  function. So just a reminder,  
+factorial of 5 is 1 times 2 times 3 times 4  times 5. And this playground already comes  
+with an implementation of factorial. It takes  the argument n, and if n is greater than 1  
+then it multiplies it by factorial of n  minus 1. So this function is recursive,  
+it calls itself. If n is 5, it will return n  times factorial of 4, and so on. If n is 1,  
+or 0, it just returns 1, which is correct  according to the definition of factorial.
+And if I scroll down we see there's a comment  that says we don't have to change anything below  
+this line. And there's a main function and a test  function. So up the top if I expand the three-dots  
+menu there's a whole bunch of options for what  I want the playground to do. If I select Run,  
+then it's going to compile the program and  then run the main function. So let's do that,  
+and we see it's printed out factorial of all the  values from 0 up to 20. Factorials get pretty big!
+Unit test functions - #[test]
+Now, let's look at that test function. It's called  test_factorial, and it has this line above it that  
+says #[test]. This hash square-bracket syntax is  called an attribute, and it applies to whatever  
+comes immediately after it, in this case the  function. The test attribute says, this function  
+is a unit test. Now when you compile your code  normally, all the test functions are left out. But  
+if you say you want to build a test runner, then  all the test functions are compiled in, and the  
+test runner invokes them all and checks they pass.  You can have as many test functions as you want,  
+sprinkled around your code. This makes it easy to  keep the tests close to the code they exercise.
+This test function calls factorial with different  values, and it asserts that the return value is  
+equal to the expected value. assert_eq! is a macro  that panics if the values are different. Hmm,  
+panics, that's what that premium video  was about. Definitely have to watch that.
+Anyway, if I go back to the menu and select  Test, I see that it compiled and ran one test,  
+test_factorial, and it passed ok. It works,  it passes the tests. What's the problem? Well,  
+right now it's recursive, which means it  uses memory proportional to n. And no,  
+Rust does not have a guaranteed tail call  optimisation, that's left up to what LLVM feels  
+like doing. So we want to fix this, by changing  factorial to be iterative, instead of recursive.
+Remember, factorial 5 is just 1 times 2  times 3 times 4 times 5. So your job is  
+to delete the body of the factorial  function, and rewrite it with a loop  
+and a mutable variable. You multiply together  the values from 1 to n, and return the result.
+Easy, right? Now when you sit down to do  this, if you're not sure how to start,  
+it's probably because you're just not used  to thinking in a different language. So just  
+write it the way you would in a language  you know well. In your favourite language,  
+could you write a program that uses a loop  to multiply some numbers together? Yeah,  
+you've got this. Then just fiddle with the syntax  until the compiler's happy and the tests pass.
+I'll leave these examples on the screen  to remind you of some relevant syntax.
+Next premium video: Panic!
+In lesson 3 I'll walk through the solution to  this exercise, and then we'll make factorial  
+panic. Actually you don't have to wait, you  can make it panic right now if you like,  
+just change the main function to show  factorial of numbers up to 25 instead of 20.
+In that premium video we'll dig into what it  means to panic, all the ways panics can happen,  
+why you might choose to panic, and what it means  for the safety of your program. Essentially a  
+panic is the simplest way to handle an error  – just stop the program. We'll look at checked  
+arithmetic and overflows, and some differences  between debug builds and release builds. We'll  
+look at converting between types when sometimes  depending on the value that can cause an error.  
+We'll practice using panics in unit tests  and I'll show you how to write a unit test  
+that ensures a function panics when it's  supposed to. Then we'll get into a somewhat  
+subtle issue around how panics work when  you have multiple threads. To illustrate,  
+I'll show you a tiny multithreaded network  service. For historical reasons Rust's default  
+configuration for panics with multiple threads  is probably not what you want. I'll explain why  
+and show you how to configure it properly,  to make your software as robust as possible.
+We'll also look at how code that panics  interacts with other languages, and how  
+you can write your own panic handler for embedded  firmware that runs without an operating system.
+Also finally there's another practice exercise  that's still quite small but a little bit bigger.  
+So if you're enjoying this so far, go press  that shiny red button, you know you want to.
+Or, don't, honestly it's entirely optional.  The series of free videos is designed to make  
+sense whether or not you watch the premium  videos. The premium stuff is really about  
+going deeper if you're serious about learning  the language, or just curious and want more.
+Next free video: Structs
+Remember, the point of all this is give you  hands-on experience with Rust, so you can see  
+for yourself how the guarantees of memory safety  and thread safety work out in practice. That's  
+where we're headed. So I'll be back soon with  another free video, where we'll get into structs,  
+move-only types, and how they can be used  to protect resources in your program.
+That's it for now, stay  curious, and I'll see you soon!
