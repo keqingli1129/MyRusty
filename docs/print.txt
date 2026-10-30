@@ -1,0 +1,137 @@
+print
+let's look at some ways to print stuff
+into the terminal using rust here's the
+folder structure and we'll create a new
+file called print. RS under the folder
+Source bin I'll open my code editor and
+inside source bin let's create a new
+file called print. RS the reason why
+we're creating a file on Source bin is
+so that this file can be executable I'm
+going to first turn off some warnings by
+typing hashtag exclamation mark brackets
+and then say allow unused if you have
+rust analyzer enabled inside your code
+editor this will tell to ignore some of
+the warnings okay let me show you some
+examples of how to use print FN main
+let's start with a simple example let's
+say that Lang is equal to rust and if
+you want to print this into the terminal
+we'll type print Ln with a exclamation
+mark print Ln means print whatever stuff
+that goes inside the parenthesis and
+followed by a new line and for the first
+example let's say hello and we want to
+print this variable length the way you
+would do this is put a curly braces and
+then outside this double quotes you'll
+put the variable lank and if you have
+two variables then you might do
+something like this and then so here you
+will need to pass in two variables bang
+and bang for variables you can also do a
+shortcut you can inline the variable so
+here instead of putting the L over here
+you can put it inside the curly braces L
+okay let's try running a simple example
+so inside my terminal I'll type cargo
+run-- in the file is called print okay
+and then you can see Hello rust hello
+rust rust and then hello rust okay let's
+go back for the print L example you can
+also pass in positional Arguments for
+example let's say that X is equal to 2
+and then let's say we're going to print
+out the multiplication of X by itself so
+print Ln want to say something *
+something is equal to the product of x *
+X so what you would do over here is
+let's say for the first input we'll put
+in next and for the next input we'll put
+in an X again and for the last input
+we'll put the product of X multi X and
+over here after the double quotes we put
+in X and then X multi by X the zero over
+here refers to the first input after the
+double quotes and the one over here
+refers to the second input after the
+double quotes here we're using
+positional arguments to say that for
+here put in the first input and for here
+put in the second input okay let's try
+running an example again so inside the
+terminal I'll type cargo Ron bin print
+okay and then we get 2 * 2 = 4 next I'm
+going to show you example of printing a
+struct rust allows you to declare custom
+data such as structs and enom so for
+example let's say that we have a struct
+and don't worry for now if you don't
+know what a struct is I'll cover this in
+another video let's say that I have a
+struck let's say L for programming
+language and it has two Fields language
+brid string and let's say version also
+string okay and then we'll create this
+struct let's say that Lang is equal to
+Lang struct with language being rust and
+the version let's say
+1.8.3 now if you wanted to print this
+out we will say print Ln there's two
+helpful ways to print this out we can
+use the debug feature by putting in
+curly braces colon and then question
+mark And Then followed by the data that
+we want to print in this case this will
+be the Lang struct Lang now if you try
+to save this you'll get a compilation
+error saying that Lang does not
+Implement debug to fix this what you
+need to do is declare an attribute on
+this struct what an attribute is is it's
+basically a metadata that tells to add
+some functionality to this struct to do
+this you'll type hashtag brackets and
+then type derive derive debug this will
+tell rust to autogenerate a code so that
+this bank stru can be printed out nicely
+and now you'll see that the aor is gone
+another way to print this Lang struct is
+to use a variation of this and this is
+over here you put another hashtag the
+difference is the first line will print
+Lang as a struct the next line we also
+print this L struck but with some line
+breaks okay so let's see some examples
+going back to the terminal and then I'll
+execute the command again cargo run bin
+print okay so notice here we have the
+struct N printed out and on the next l L
+we have the same struct printed out
+except this time it has some line breaks
+so these are some examples of using
+print elen to print stuff into the
+console now before we end this video I'm
+going to show you one command that's
+going to be helpful when you're writing
+rust code the command is called cargo
+cargo fmt
+format cargo fmt what it will do is it
+will format your code so let's say that
+we have some bunch of Vine brakes and
+maybe the indentation is off if you run
+this command cargo format inside your
+terminal this will fix your code so that
+indentations will be fixed and
+unnecessary line breaks will be removed
+now I have my code editor configured so
+that cargo format will run every time I
+save this file so if I save this file
+you'll see that the unnecessary line
+brakes are removed and the indentations
+are fixed you can also run this inside
+your terminal inside your terminal you
+can say cargo fmt and this will format
+all of the code inside this hello rust
+folder
