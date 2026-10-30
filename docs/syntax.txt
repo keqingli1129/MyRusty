@@ -1,0 +1,323 @@
+Introduction to Rust
+Hey everyone, I'm Bo and in this video
+we're covering all of Rust's syntax as
+quickly as possible. This is best if you
+need a refresher or are already familiar
+with another programming language. So,
+let's get started. Rust is a systems
+programming language that guarantees
+memory safety and thread safety without
+a garbage collector. It achieves this
+through its unique compile time
+ownership model, zerocost abstractions,
+and strict type system. Let's start with
+Variables, Mutability, Constants, and Type Casting
+variables, mutability, constants, and
+type casting. In Rust, variables are
+immutable by default. You declare
+variables with the let keyword. To make
+a variable mutable, use the mute
+keyword. Type annotations are optional
+when Rust can infer the type. Also,
+throughout this tutorial, feel free to
+pause to examine the code examples in
+detail. You can redeclare a variable
+with the let keyword in the same scope.
+This is called variable shadowing.
+Constants are declared with const and
+evaluated at compile time. Static
+variables declared with static have a
+fixed memory location for the entire
+program duration. Type aliases create
+custom names for existing types using
+the type keyword. Type casting between
+primitive scalar types uses the as
+keyword such as casting an integer to a
+float or raw pointer. Now let's look at
+rust scalar and compound data types.
+Scalar and Compound Data Types
+Rust scalar types represent single
+values. Signed integers range from i8 to
+i128
+and unsigned from U8 to U128.
+Plus pointer sized I size and U size.
+Floats are F32 and F64.
+Booleans are bool. The car type
+represents a four byte unicode scalar
+value. Compound types group multiple
+values. Tpples have fixed lengths and
+can hold elements of different types.
+Arrays have fixed lengths and hold
+elements of the exact same type
+specified as type semicolon length. Now
+Functions, Statements, and Expressions
+let's cover functions and statements
+versus expressions.
+Functions are declared with the fn
+keyword using snake case. Parameters
+must have explicit type annotations and
+return types follow an arrow. Use the
+return keyword for explicit early
+returns. Rust is an expression-based
+language. Statements perform actions and
+end with a semicolon, returning nothing.
+Expressions evaluate to a value and do
+not end with a semicolon. The last
+expression in a block becomes its return
+value. Now let's look at control flow.
+Control Flow
+Rust uses if, else if, and else for
+conditionals. Parentheses are optional,
+but block curly braces are mandatory.
+Because if is an expression, you can
+assign its result directly to a
+variable. The loop keyword creates an
+infinite loop. You can exit with break,
+skip iterations with continue, or return
+values directly from break. Single quote
+labels let you break or continue outer
+loops. While loops run as long as a
+condition holds true. Four loops iterate
+over collections and ranges. Range
+syntax double dot excludes the upper
+bound while double dot equals includes
+it. Now let me introduce ownership and
+Ownership Foundations
+borrowing. The core foundations of Rust.
+Rust manages memory through three
+ownership rules. First, each value has
+an owner. Second, there can only be one
+owner at a time. Third, when the owner
+goes out of scope, the value is
+automatically dropped. When you assign a
+heap allocated variable, like a string,
+to another, ownership is moved, making
+the original variable invalid. Quick
+Sponsor Break (MindHub)
+sponsor break. MindHub is a desktop AI
+app where you can describe a task in
+plain English and it just gets it done.
+You connect your tools once like GitHub,
+Gmail or your database and then you can
+just delegate to it. So watch this. I'm
+going to open it up and say look at the
+open issues in my Rush system striker
+repo. Summarize what's blocking us and
+write a markdown status update. That's
+this repo right here. So we'll submit
+that and it's done. It connected read
+the actual bugs we were just looking at.
+It's given a summary of them and gives a
+recommended sequence here. And it's not
+just for code. I can open up a new chat
+and say read the last three sponsor
+emails and draft a polite reply. It
+hooks right into my inbox and handles
+the busy work for me. And the best part
+is M's hub is free to start with 5
+million tokens. So you can test the
+onreal workflows. After that, you can
+purchase additional tokens for the
+models you want to use or connect your
+own model API keys. Now, back to the
+Copy Trait, Borrowing, References, and Slices
+video. Types with known size implement
+the copy trait and duplicate stack data
+instead of moving. Borrowing allows you
+to access data without taking ownership.
+You can create references with the
+amperand symbol. Immutable references
+let you read data without modifying it.
+Mutable references with amperand mute
+let you modify borrowed data. The
+aliasing rule dictates you can have
+either any number of immutable
+references or exactly one mutable
+mutable reference at a time but never
+both. Slices are references to a
+contiguous sequence of elements without
+taking ownership. String slices amperand
+str refer to string portions while array
+slices amperand bracket t work on arrays
+or vectors. Now let's look at strrus and
+Structs and Implementation Blocks
+implementation blocks. Strs group
+related data. Strus can have named
+fields, tpple fields or unitlike strrus
+with no fields. Field innit shorthand
+and strct update syntax double dot keep
+instantiation concise. Methods are
+defined inside impl blocks. Methods take
+amperand self to read data, amperand
+mute self to modify it or self to
+consume it. Functions without self are
+associated functions like constructors.
+Now let's cover enums and advanced
+Enums and Advanced Pattern Matching
+pattern matching. Enums define a type by
+enumerating its possible variants. Rust
+enums are powerful because individual
+variants can embed data like primitives,
+tuples or strrus. The match expression
+provides exhaustive pattern matching.
+Use pipe for multiple patterns, double
+equals for ranges, at sign for variable
+binding, and underscore as a catchall
+wild card. When matching a single
+variant, use iflet or while let syntax.
+It provides concise handling without
+requiring an exhaustive match block.
+Now, let's talk error handling. Rust
+Error Handling (Option and Result)
+doesn't have null. Instead, it uses
+option t, which can be either sum
+containing a value or none representing
+absence, forcing explicit handling of
+nullability.
+For recoverable errors, Rust uses result
+with okay for success and error for
+failure. The question mark operator
+provides clean error propagation by
+returning early on error. For
+recoverable errors, Rust uses result
+with okay for success and error for
+failure. The question mark operator
+provides clean error propagation by
+returning early on error. Unreoverable
+errors trigger panic which unwinds the
+stack. Useful helper methods like
+unwrap, expect and unwrap or extract
+values or provide fallback defaults. Now
+let's cover common collections, vectors,
+Common Collections (Vectors, Strings, and HashMaps)
+strings and hashmaps.
+Vectors are heap allocated resizable
+arrays created with the ve new or the ve
+exclamation point macro.
+Use push to append, pop or remove, and
+square brackets or get for indexing.
+Rust has two main string types. String a
+global UTF8 heap buffer and amperand str
+a string slice. Appin strings with push
+strr and construct formatted strings
+with format exclamation point. Hashmap
+stores key value pairs. Use insert to
+add pairs, get to look up values, and
+the entry API with or insert to handle
+missing keys cleanly. Now, let's look at
+generics and traits.
+Generics and Traits
+Generics allow you to write code for
+multiple types without duplication. You
+can define generic functions, strrus,
+and enums using angle brackets.
+Traits define shared behavior similar to
+interfaces.
+Method signatures are declared inside a
+trait block which can also include
+default method implementations.
+Implement traits using MPL trait for
+type syntax. Standard traits like from
+and into provide idiomatic value
+conversions between custom types. Trait
+bounds restrict generic parameters to
+types implementing specific traits. Use
+impl trait syntax in parameters plus
+sign for multiple bounds or wear clauses
+for clean formatting. Rust provides the
+derive attribute to automatically
+implement common traits like debug,
+clone, copy, partial EQ, EQ, and default
+on custom strrus and enums. Trait
+objects allow for dynamic dispatch and
+runtime polymorphism. Using box dynit
+lets you store heterogeneous types
+inside a single collection. Now, let's
+Lifetimes
+cover lifetimes.
+Lifetimes ensure that references remain
+valid as long as they are used. The
+compiler's borrow checker uses lifetime
+annotations starting with an apostrophe
+to validate reference relationships
+across function signatures. Rust applies
+lifetime alleion rules to automatically
+infer lifetimes in common signatures.
+The special quote static lifetime
+indicates that data lives for the entire
+duration of the program. Now let's talk
+Closures and Iterators
+about closures and iterators.
+Closures are anonymous functions that
+capture variables from their enclosing
+scope using vertical pipes for
+parameters. The move keyword forces
+closures to take full ownership of
+captured variables. Iterators produce
+sequences lazily. Use it for immutable
+references, iterable
+references, and intoitter
+for owned values. Adapters like map,
+filter, and collect process streams. Now
+Smart Pointers, Deref Coercion, and Destructors
+let's look at smart pointers, direct
+coercion, and custom destructors. Box
+allocates data on the heap. Implementing
+the direct trait allows smart pointers
+to behave like regular references
+through automatic direct coercion. RC
+provides singlethreaded reference
+counting for multiple ownership. ARC is
+the atomic thread safe equivalent for
+sharing reference counted data across
+multiple OS threads. Refell provides
+interior mutability in singlethreaded
+code. Moving borrow checks to runtime.
+For multi-threaded code, use mutx or rw
+lock for thread safe shared mutability.
+Implementing the drop trait allows you
+to define custom destructor logic that
+executes automatically when a value goes
+out of scope. Now let's cover
+Concurrency and Async
+concurrency and async. Rust spawn native
+OS threads using thread colon spawn with
+a move closure. Rust uses MPSC channels
+multiple producer single consumer for
+message passing between threads.
+Async Rust handles non-blocking IO with
+async functions returning futures.
+Use a wait to pause execution until a
+future completes within an async runtime
+like Tokyo. Now let's cover modules,
+Modules, Attributes, Macros, and Unsafe Rust
+attributes, macros, and unsafe Rust.
+Modules organize code into hierarchies.
+Use mod to declare modules. Use to
+import paths. Pub for public visibility.
+Pub crate for crate visibility. And pub
+super for parent visibility. Attributes.
+Configure compiler behavior. Use hash
+bracket cfg for conditional compilation.
+hash bracket inline for performance
+hints and hash bracket allow or deny for
+lint control. Declarative macros defined
+with macro rules exclamation point
+perform compile time meta programming.
+Unsafe blocks bypass compiler safety
+checks to dreference raw pointers or
+call cfi functions. Finally, essential
+Essential Cargo Workflow Commands
+cargo workflow commands. Cargo creates
+new projects. Cargo build compiles.
+Cargo run executes. Cargo check tests
+syntax fast. Cargo test runs unit tests.
+Cargo FMT formats code. And cargo clippy
+lints code. Here is the quick reference
+cheat sheet summarizing all key Rust
+syntax constructs and cargo workflow
+commands that covers all of Rust's core
+syntax, keywords, traits, and tooling
+commands. Practice writing code,
+fighting the borrow checker, and
+building projects. Thanks for watching.
